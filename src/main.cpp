@@ -358,6 +358,7 @@ public:
         auto &todelete = mData.top();
         if (todelete->mError.size() > 0) {
           std::cout << "Error: " << todelete->mError << std::endl;
+          exit(0);
         }
         if (todelete->mParseComplete == true) {
           mData.pop();
