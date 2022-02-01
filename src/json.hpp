@@ -10,12 +10,12 @@
 #include <unordered_map>
 #include <utility>
 
-#include "type.hpp"
-#include "json_string.hpp"
 #include "json_array.hpp"
 #include "json_number.hpp"
-#include "json_value.hpp"
 #include "json_object.hpp"
+#include "json_string.hpp"
+#include "json_value.hpp"
+#include "type.hpp"
 
 class JsonParser {
 public:
@@ -25,15 +25,18 @@ public:
       getObj(line);
       newObj = false;
     } else {
-      auto &obj = mData.top();
-      if (obj->parse(line, mData) == false) {
-        std::cout << "Error Parsing: " << line << std::endl;
+      if (mData.size() > 0) {
+        auto &obj = mData.top();
+        if (obj->parse(line, mData) == false) {
+          std::cout << "Error Parsing: " << line << std::endl;
+        }
       }
 
       while (mData.size() > 0) {
         auto &todelete = mData.top();
         if (todelete->mError.size() > 0) {
           std::cout << "Error: " << todelete->mError << std::endl;
+          exit(0);
         }
         if (todelete->mParseComplete == true) {
           mData.pop();

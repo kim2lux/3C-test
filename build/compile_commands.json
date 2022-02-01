@@ -1,0 +1,12 @@
+[
+{
+  "directory": "/home/jeremy/workspace/3C-test/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-8 -I/home/jeremy/workspace/3C-test/./include  -O2 -Wall -Wpedantic -Wextra -g -std=gnu++2a -o CMakeFiles/proj.dir/src/main.cpp.o -c /home/jeremy/workspace/3C-test/src/main.cpp",
+  "file": "/home/jeremy/workspace/3C-test/src/main.cpp"
+},
+{
+  "directory": "/home/jeremy/workspace/3C-test/build",
+  "command": "/usr/bin/x86_64-linux-gnu-g++-8 -I/home/jeremy/workspace/3C-test/./include  -O2 -Wall -Wpedantic -Wextra -g -std=gnu++2a -o CMakeFiles/test.dir/test/test.cpp.o -c /home/jeremy/workspace/3C-test/test/test.cpp",
+  "file": "/home/jeremy/workspace/3C-test/test/test.cpp"
+}
+]

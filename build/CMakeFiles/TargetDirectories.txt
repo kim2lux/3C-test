@@ -1,0 +1,4 @@
+/home/jeremy/workspace/3C-test/build/CMakeFiles/proj.dir
+/home/jeremy/workspace/3C-test/build/CMakeFiles/test.dir
+/home/jeremy/workspace/3C-test/build/CMakeFiles/edit_cache.dir
+/home/jeremy/workspace/3C-test/build/CMakeFiles/rebuild_cache.dir
