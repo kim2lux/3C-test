@@ -9,6 +9,7 @@
 #include <utility>
 
 class JsonString;
+class JsonNumber;
 class JsonObject;
 class JsonArray;
 
@@ -27,6 +28,10 @@ public:
                   std::stack<std::unique_ptr<JsonObj>> &data) {
     if (*token == '"') {
       auto &obj = data.emplace(std::make_unique<JsonString>());
+      return obj->parse(token, end, data);
+    }
+    else if (*token >= '0' && *token <= '9') {
+      auto &obj = data.emplace(std::make_unique<JsonNumber>());
       return obj->parse(token, end, data);
     }
     else if (*token == '{') {
@@ -48,7 +53,7 @@ using DataType = std::stack<std::unique_ptr<JsonObj>>;
 class JsonString final : public JsonObj {
 public:
 public:
-  explicit JsonString() { std::cout << "String" << std::endl; }
+  explicit JsonString() { std::cout << "Create JsonString" << std::endl; }
 
   bool parse(const std::string &s, std::stack<std::unique_ptr<JsonObj>> &data) {
     auto start = s.begin();
@@ -67,17 +72,14 @@ public:
       switch (mState) {
       case State::Start:
         if (*token != Transition::StartKeyToken) {
-          mError = "String not startin by StartToken";
+          mError = "String not starting by StartToken";
           return false;
         }
         mState = State::Current;
         break;
       case State::Current:
         if (*token == Transition::EndKeyToken) {
-          std::cout << "Json String: " << mContent << std::endl;
-          if (mContent == std::string{"CreateNewDoc()"}) {
-              std::cout << "debug" << std::endl;
-          }
+          std::cout << "value: " << mContent << std::endl;
           mParseComplete = true;
           return true;
         }
@@ -97,9 +99,57 @@ private:
   State mState{Start};
 };
 
+class JsonNumber final : public JsonObj {
+public:
+public:
+  explicit JsonNumber() { std::cout << "Create JsonNumber" << std::endl; }
+
+  bool parse(const std::string &s, std::stack<std::unique_ptr<JsonObj>> &data) {
+    auto start = s.begin();
+    return process(start, s.cend(), data);
+  };
+  bool parse(std::string::const_iterator &start,
+             std::string::const_iterator end,
+             std::stack<std::unique_ptr<JsonObj>> &data) {
+    return process(start, end, data);
+  }
+
+  bool process(std::string::const_iterator &token,
+               std::string::const_iterator end,
+               __attribute__((unused)) DataType &data) {
+    while (token != end) {
+      switch (mState) {
+      case State::Start:
+        if (*token == ',') {
+            std::cout<< "Number: " << std::stoi(mContent.c_str()) << std::endl;
+            mParseComplete = true;
+            return true;
+        }
+        if (*token < Transition::Lower || Transition::Upper > '9') {
+            mError= std::string{"Number parsing error"};
+            return false;
+        }
+      }
+      mContent.append(1, *token);
+      ++token;
+    }
+    std::cout<< "Number: " << std::stoi(mContent.c_str()) << std::endl;
+    mParseComplete = true;
+    return true;
+  }
+
+private:
+  enum Transition : char { Lower = '0', Upper = '9' };
+  enum State : char { Start };
+  std::string mContent;
+
+  State mState{Start};
+};
+
+
 class JsonValue final : public JsonObj {
 public:
-  explicit JsonValue() { std::cout << "Value" << std::endl; }
+  explicit JsonValue() { std::cout << "JsonValue" << std::endl; }
   bool parse(const std::string &s, DataType &data) override {
     auto start = s.begin();
     return process(start, s.cend(), data);
@@ -123,10 +173,10 @@ public:
         break;
       case State::CurrentKey:
         if (*token == EndKeyToken) {
-          std::cout << "key: " << mKey << std::endl;
-          if (mKey == std::string{"onclick"}) {
-              std::cout << "dbg" << std::endl;
-          }
+          std::cout << "Key: " << mKey << std::endl;
+        //   if (mKey == std::string{"onclick"}) {
+        //       std::cout << "dbg" << std::endl;
+        //   }
           mState = State::Separator;
         } else {
           mKey.append(1, *token);
@@ -139,8 +189,10 @@ public:
         mState = State::ValueStart;
         break;
       case State::ValueStart:
-        newProcess(token, end, data);
         mState = State::ValueEnd;
+        if (newProcess(token, end, data) == true) {
+            mParseComplete = true;
+        }
         break;
       case State::ValueEnd:
         if (*token != Terminate) {
@@ -150,7 +202,6 @@ public:
         mParseComplete = true;
         break;
       }
-      std::cout << *token << std::endl;
       ++token;
     }
     return true;
@@ -175,7 +226,7 @@ private:
 
 class JsonArray final : public JsonObj {
 public:
-  explicit JsonArray() { std::cout << "Array" << std::endl; }
+  explicit JsonArray() { std::cout << "Create JsonArray" << std::endl; }
   bool parse(const std::string &s, DataType &data) override {
     auto start = s.begin();
     return process(start, s.cend(), data);
@@ -199,7 +250,7 @@ public:
         break;
       case State::NewElement:
         if (*token == EndKeyToken) {
-          std::cout << "Array Done" << std::endl;
+          std::cout << "Array Close" << std::endl;
           mParseComplete = true;
           return true;
         }
@@ -217,7 +268,6 @@ public:
              return false;
          }
       }
-      std::cout << *token << std::endl;
       ++token;
     }
     return true;
@@ -269,14 +319,17 @@ public:
           mState = State::StartValue;
           return obj->parse(token, end, data);
         } else if (*token == Token::End) {
+            std::cout << "Json Object close" << std::endl;
           mParseComplete = true;
-        } else {
+        } else if (mParseComplete && *token == ',')
+        {
+          mParseComplete = true;
+        }else{
           mError = std::string{"No StartVale or End token available"};
           return false;
         }
         break;
       }
-      std::cout << *token << std::endl;
       ++token;
     }
     return true;
@@ -307,7 +360,6 @@ public:
           std::cout << "Error: " << todelete->mError << std::endl;
         }
         if (todelete->mParseComplete == true) {
-          std::cout << "done parse: " << std::endl;
           mData.pop();
         } else {
           return;
