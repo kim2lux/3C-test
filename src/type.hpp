@@ -35,6 +35,9 @@ public:
     } else if (*token >= '0' && *token <= '9') {
       auto &obj = data.emplace(std::make_unique<JsonNumber>());
       return obj->parse(token, end, data);
+    } else if (*token == 't' || *token == 'f') {
+      auto &obj = data.emplace(std::make_unique<JsonNumber>(true));
+      return obj->parse(token, end, data);
     } else if (*token == '{') {
       auto &obj = data.emplace(std::make_unique<JsonObject>());
       return obj->parse(token, end, data);

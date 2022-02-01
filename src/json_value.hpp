@@ -50,6 +50,7 @@ public:
         mState = State::ValueEnd;
         if (newProcess(token, end, data) == true) {
           mParseComplete = true;
+          return true;
         }
         break;
       case State::ValueEnd:

@@ -5,7 +5,7 @@
 class JsonNumber final : public JsonObj {
 public:
 public:
-  explicit JsonNumber() {}
+  explicit JsonNumber(bool all=false) : mAll{all} {}
 
   bool parse(const std::string &s, std::stack<std::unique_ptr<JsonObj>> &data) {
     auto start = s.begin();
@@ -31,7 +31,10 @@ public:
           mParseComplete = true;
           return true;
         }
-        if (*token < Transition::Lower || Transition::Upper < *token) {
+        if (mAll) {
+            ;
+        }
+        else if (*token < Transition::Lower || Transition::Upper < *token) {
           mParseComplete = true;
           mError = std::string{"Number parsing error"};
           return false;
@@ -40,7 +43,10 @@ public:
       mContent.append(1, *token);
       ++token;
     }
+    if (!mAll) {
     std::cout << "Number: " << std::stoi(mContent.c_str()) << std::endl;
+
+    }
     mParseComplete = true;
     return true;
   }
@@ -51,4 +57,5 @@ private:
   std::string mContent;
 
   State mState{Start};
+  bool mAll{false};
 };
